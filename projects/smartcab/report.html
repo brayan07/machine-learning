@@ -17940,7 +17940,7 @@ mGBJkiRJ0oCYYEmSJEnSgPwfnWvU1EHdXIoAAAAASUVORK5CYII=
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><strong>Answer:</strong>
-It would not make sense to implement future rewards because the Smartcab cannot be expected to know the probabilities of all potential successive states; we do not know what the transition functions are and can't be expected to derive them using the vehicle's sensors, which only give it information about the intersection at which the vehicle finds itself.  Secondly, there is no reward, in this implementation of the environment, for arriving at the destination before the deadline.  Therefore, if future rewards are taken into account, the agent could start learning to take the wrong turn, as long as it doesn't get into an accident or commit a violation, so that it can keep getting the reward of 1 for making a valid but incorrect action.  The vehicle could thus maximize its reward by prolonging the trip, rather than ending it early.</p>
+It would not make sense to implement future rewards because the Smartcab cannot be expected to know the probabilities of all potential successive states; the intersections stochastically transform from one state to another and the vehicle's sensors only give it information about the intersection at which the vehicle finds itself.</p>
 
 </div>
 </div>
