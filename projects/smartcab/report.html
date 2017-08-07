@@ -13154,8 +13154,8 @@ Only waypoint, light, left, and oncoming are relevant.</p>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><strong>Answer:</strong>
-For state space ('waypoint','light','left','oncoming') the number of combinations is 4<em>2</em>4<em>4 = 128 states.
-If each state is equally likely to occur and we want the agent to be exposed at least 10 times to each state then 128</em>10 states/(10 states / trial)= 128 trials.</p>
+For state space ('waypoint','light','left','oncoming') the number of combinations is 4*2*4*4 = 128 states.
+If each state is equally likely to occur and we want the agent to be exposed at least 10 times to each state then 128*10 states/(10 states / trial)= 128 trials.</p>
 <p>The agent can most definitely learn a policy for each possible state if the decay function of epsilon is chosen judiciously so that enugh training trials are undergone.  Since the waypoint and the lights are independently and uniformly selected--waypoint is random since destination is chosen randomly--, we are almost certainly bound to encounter all combinations of these two attributes.  Further, since there are on average 100 dummies/48 intersections = 2 dummies/intersection.  This makes it likely that we will encounter the 4 combinations of (left, oncoming) that we need for our agent.  There are 3 other spots at the intersection so of the times when there are two other vehicles at the intersection, the most common number, the left and oncoming spots should be occupied on average 1/3 of the time, right and oncoming 1/3, and left and right another 1/3. It should not be too rare for there to be 1 other car at the intersection, at which point 2/3 of the time a car will be in a spot useful for learning,i.e., left or oncoming.</p>
 
 </div>
