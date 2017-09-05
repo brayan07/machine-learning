@@ -67,3 +67,5 @@ target/
 *.conf
 #Temp Boto files
 projects/capstone/DHSThreatRecognition/temp/
+#Pickle files
+.pickle
