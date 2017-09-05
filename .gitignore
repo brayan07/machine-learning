@@ -65,3 +65,5 @@ target/
 .ipynb_checkpoints
 #Conf Files
 *.conf
+#Temp Boto files
+projects/capstone/DHSThreatRecognition/temp/
