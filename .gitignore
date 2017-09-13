@@ -67,5 +67,7 @@ target/
 *.conf
 #Temp Boto files
 projects/capstone/DHSThreatRecognition/temp/
+#Tensorboard directory
+projects/capstone/DHSThreatRecognition/logs/
 #Pickle files
 *.pickle
