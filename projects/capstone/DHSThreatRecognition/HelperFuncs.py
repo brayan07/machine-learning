@@ -1,6 +1,11 @@
 import IOFunctions as iof
 import pickle
 import boto3
+import configparser
+import numpy as np
+import pandas as pd
+import os
+import cv2
 
 #Image preprocessing funcitons and global variables
 #Load stats
@@ -124,7 +129,7 @@ def CropCleanResize(x,new_i,new_j):
     min_i,max_i,max_j = FindCropDimensions(x)
     x_new = CropImage(x,min_i,max_i,max_j,new_i,new_j)
     ReduceNoiseAndNormalize_v = np.vectorize(ReduceNoiseandNormalize)
-    x_new = ReduceNoise_v(x_new)
+    x_new = ReduceNoiseAndNormalize_v(x_new,AVERAGE,STD)
     return x_new
 	
 #Helper functions
@@ -198,7 +203,6 @@ class BatchRequester:
     def __init__(self,bucket,key_ary,labels_dict,dataDir,
                  temp_dir,extension,batch_size=10,zones=17,dim=[512,660,64]):
         self.bucket = bucket
-        self.keys = key_ary.copy()
         self.batch_size = batch_size
         self.temp_dir = temp_dir
         self.labels_dict = labels_dict.copy()
@@ -206,7 +210,17 @@ class BatchRequester:
         self.extension = extension    
         self.zones = zones
         self.dim = dim
-    
+        self.keys = self.CleanKeyAry(key_ary)
+        
+    def CleanKeyAry(self,key_ary):
+        key_ary_new=[]
+        for key in key_ary:
+            img_id = key.strip().replace(self.dataDir,'').replace(self.extension,'')
+            if img_id in self.labels_dict.keys():
+                key_ary_new.append(key)
+            else:
+                continue
+        return key_ary_new
     def DoItemsRemain(self):
         '''
         Checks to see whether any unexamined keys remain.
