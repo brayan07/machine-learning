@@ -128,6 +128,7 @@ def CropCleanResize(x,new_i,new_j):
     '''Crops and returns 2d image with specified uniform dimensions'''
     min_i,max_i,max_j = FindCropDimensions(x)
     x_new = CropImage(x,min_i,max_i,max_j,new_i,new_j)
+    print(x_new.shape)
     ReduceNoiseAndNormalize_v = np.vectorize(ReduceNoiseandNormalize)
     x_new = ReduceNoiseAndNormalize_v(x_new,AVERAGE,STD)
     return x_new
