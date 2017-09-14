@@ -7,6 +7,7 @@ import pandas as pd
 import os
 import cv2
 
+np.random.seed(0)
 #Image preprocessing funcitons and global variables
 #Load stats
 with open('stats.pickle',"rb") as f:
@@ -91,24 +92,35 @@ def CropImage(x,min_i,max_i,max_j,new_i,new_j):
     resize_j = False
     
     #Width
-    old_i = max_i-min_i
+    old_i = max_i-min_i+1
     #If crop is of smaller width than new_i
     if old_i <= new_i:
+        #Calculate total difference and buffer assuming it is evenly split
         diff = new_i-old_i
         buffer,remainder = divmod(diff,2)
-        #Move min_i
-        if min_i > buffer:
-            min_i = min_i - buffer
+        #Check which side has a bigger margin
+        margin_i_min = min_i
+        margin_i_max = x.shape[0]-max_i-1
+        if margin_i_min <= margin_i_max:
+            if margin_i_min > buffer:
+                min_i = min_i - buffer
+            else:
+                remainder += buffer - margin_i_min
+                min_i = 0
+            max_i += buffer + remainder
         else:
-            remainder += buffer - min_i
-            min_i = 0
-        max_i += buffer + remainder
+            if margin_i_max > buffer:
+                max_i = max_i + buffer
+            else:
+                remainder += buffer - margin_i_max
+                max_i = x.shape[0]-1
+            min_i -= buffer + remainder
     else:
         #Image needs to be resized along this dimension
         resize_i = True
     
     #Height
-    old_j = max_j
+    old_j = max_j+1
     #If crop is of smaller height than new_j
     if old_j <= new_j:
         diff = new_j - old_j
@@ -120,10 +132,9 @@ def CropImage(x,min_i,max_i,max_j,new_i,new_j):
         
     #Resize along either dimension?
     if resize_i or resize_j:
-        return cv2.resize(x[min_i:max_i,:max_j],dsize=(new_j,new_i))
+        return cv2.resize(x[min_i:max_i+1,:max_j+1],dsize=(new_j,new_i))
     else:
-        return x[min_i:max_i,:max_j]
-
+        return x[min_i:max_i+1,:max_j+1]
 def CropCleanResize(x,new_i,new_j):
     '''Crops and returns 2d image with specified uniform dimensions'''
     min_i,max_i,max_j = FindCropDimensions(x)
@@ -290,7 +301,6 @@ class BatchRequester:
         
         i = 0
         batch_data = np.zeros((size,self.dim[0],self.dim[1],self.dim[2]))
-        #batch_data = np.zeros((size,new_dim,new_dim2,self.dim[2]))
         batch_labels = np.zeros((size,self.zones))
         
         while i < size and self.DoItemsRemain():
@@ -301,8 +311,6 @@ class BatchRequester:
                 continue
             try:
                 batch_data[i,:,:,:] = self.AttemptDataRetrieval(self.keys[self.key_pointer])
-                #batch_data[i,:,:,:] = cv2.resize(self.AttemptDataRetrieval(self.keys[self.key_pointer]),
-                 #                                dsize=(new_dim2,new_dim))
             except(self.CustomException):
                 self.key_pointer += 1
                 continue
