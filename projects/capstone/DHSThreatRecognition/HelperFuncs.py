@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import os
 import cv2
+import time
 
 np.random.seed(0)
 #Image preprocessing funcitons and global variables
@@ -139,7 +140,6 @@ def CropCleanResize(x,new_i,new_j):
     '''Crops and returns 2d image with specified uniform dimensions'''
     min_i,max_i,max_j = FindCropDimensions(x)
     x_new = CropImage(x,min_i,max_i,max_j,new_i,new_j)
-    print(x_new.shape)
     ReduceNoiseAndNormalize_v = np.vectorize(ReduceNoiseandNormalize)
     x_new = ReduceNoiseAndNormalize_v(x_new,AVERAGE,STD)
     return x_new
@@ -280,7 +280,7 @@ class BatchRequester:
                 failure = True
         os.remove(path)
         if failure:
-            raise self.CustomException("Data could ot be retrieved.")
+            raise self.CustomException("Data could not be retrieved.")
         else:
             return img_array
     def NextBatch(self,size=None):
@@ -303,7 +303,13 @@ class BatchRequester:
         batch_data = np.zeros((size,self.dim[0],self.dim[1],self.dim[2]))
         batch_labels = np.zeros((size,self.zones))
         
+        #Avoid throttling errors
+        MAX_RATE = 200 #Requests per second
+        delay = 1/MAX_RATE #seconds
+        
+        #Grab samples
         while i < size and self.DoItemsRemain():
+            time.sleep(delay)
             try:
                 batch_labels[i,:] = self.AttemptLabelRetrieval(self.keys[self.key_pointer])
             except(self.CustomException):
