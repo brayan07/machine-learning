@@ -140,8 +140,8 @@ def CropCleanResize(x,new_i,new_j):
     '''Crops and returns 2d image with specified uniform dimensions'''
     min_i,max_i,max_j = FindCropDimensions(x)
     x_new = CropImage(x,min_i,max_i,max_j,new_i,new_j)
-    ReduceNoiseAndNormalize_v = np.vectorize(ReduceNoiseandNormalize)
-    x_new = ReduceNoiseAndNormalize_v(x_new,AVERAGE,STD)
+    ReduceNoise_v = np.vectorize(ReduceNoise)
+    x_new = ReduceNoise_v(x_new)
     return x_new
 	
 #Helper functions
@@ -225,6 +225,7 @@ class BatchRequester:
         self.keys = self.CleanKeyAry(key_ary)
         
     def CleanKeyAry(self,key_ary):
+        '''Makes certain that keys given are all in the labels supplied'''
         key_ary_new=[]
         for key in key_ary:
             img_id = key.strip().replace(self.dataDir,'').replace(self.extension,'')
@@ -263,9 +264,7 @@ class BatchRequester:
         '''
         Attempts to retrieve data from specified bucket using key.
         
-        '''
-        #DataException = self.CustomException("Failed data retrieval!")
-        
+        '''        
         img_id = key.strip().replace(self.dataDir,'').replace(self.extension,'')
         filename = "{}.{}".format(img_id,self.extension)
         path = os.path.join(self.temp_dir,filename)
@@ -283,16 +282,13 @@ class BatchRequester:
             raise self.CustomException("Data could not be retrieved.")
         else:
             return img_array
+        
     def NextBatch(self,size=None):
         '''
         Gets a batch of data of the specified size.  If no more images remain,
         then it returns a batch of smaller size.
         
         '''
-        #angles = [0,8,16,24,32,40,48,56]
-        #new_dim = 500
-        #new_dim2 = 600
-        
         if not self.DoItemsRemain():
             return None,None
         
