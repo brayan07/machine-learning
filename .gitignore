@@ -71,3 +71,5 @@ projects/capstone/DHSThreatRecognition/temp/
 projects/capstone/DHSThreatRecognition/logs/
 #Pickle files
 *.pickle
+#H5 Files
+.h5
