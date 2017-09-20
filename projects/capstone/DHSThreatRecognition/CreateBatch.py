@@ -7,7 +7,7 @@ import os
 import pickle
 import logging
 
-logging.basicConfig(filename='Upload.log',filemode="w",level=logging.INFO)
+logging.basicConfig(filename='Upload.log',level=logging.INFO)
 
 BATCH_SIZE = 20
 FINAL_WIDTH = 400
@@ -125,12 +125,16 @@ def getTrainTestValData(labels_dir=LABELS_DIR,extension=EXTENSION,dataDir=DATA_D
     return K_train,K_test,K_val     
 
 #Separate data and save
-K_train,K_test,K_val = getTrainTestValData()
+#K_train,K_test,K_val = getTrainTestValData()
 
 filename = "data_separated.pickle"
-save = {'K_train':K_train,'K_test':K_train,'K_val':K_val}
-with open(filename,"wb") as f:
-    pickle.dump(save,f)
+#save = {'K_train':K_train,'K_test':K_train,'K_val':K_val}
+#with open(filename,"wb") as f:
+#    pickle.dump(save,f)
+with open(filename,"rb") as f:
+   save = pickle.load(f)
+   K_test= save['K_test']
+   K_val = save['K_val']
 
 #Connect to aws s3
 UPLOAD_BUCKET = 'cleandhsdata'
@@ -139,36 +143,36 @@ client = hfuncs.GetAWSClient(key_id,secret_key)
 bucket = client.Bucket(UPLOAD_BUCKET)
 
 #Clean and upload
-logging.info("Starting train upload")
-trainGen = myGenerator(K_train,25)
-i = 0
-for X, y in trainGen.GenerateSamples():
-    filename = os.path.join(TEMP_DIR,"batch_{}.hdf5".format(i))
-    key = "train/{}".format("batch_{}.hdf5".format(i))
-    with h5py.File(filename,"w") as f:
-        dset = f.create_dataset('image',data=X)
-        dset2 = f.create_dataset('labels',data=y)
-    bucket.upload_file(Filename=filename,Key=key)
-    os.remove(filename)
-    i += 1
-    logging.info("Completed batch {}".format(i))
-    print("Completed batch {}".format(i))
+#logging.info("Starting train upload")
+#trainGen = myGenerator(K_train,25)
+#i = 0
+#for X, y in trainGen.GenerateSamples():
+#    filename = os.path.join(TEMP_DIR,"batch_{}.hdf5".format(i))
+#    key = "train/{}".format("batch_{}.hdf5".format(i))
+#    with h5py.File(filename,"w") as f:
+#        dset = f.create_dataset('image',data=X)
+#        dset2 = f.create_dataset('labels',data=y)
+#    bucket.upload_file(Filename=filename,Key=key)
+#    os.remove(filename)
+#    i += 1
+#    logging.info("Completed batch {}".format(i))
+#    print("Completed batch {}".format(i))
 
 #Clean and upload
-logging.info("Starting val upload")
-trainGen = myGenerator(K_val,25)
-i = 0
-for X, y in trainGen.GenerateSamples():
-    filename = os.path.join(TEMP_DIR,"batch_{}.hdf5".format(i))
-    key = "val/{}".format("batch_{}.hdf5".format(i))
-    with h5py.File(filename,"w") as f:
-        dset = f.create_dataset('image',data=X)
-        dset2 = f.create_dataset('labels',data=y)
-    bucket.upload_file(Filename=filename,Key=key)
-    os.remove(filename)
-    i += 1
-    logging.info("Completed batch {}".format(i))
-    print("Completed batch {}".format(i))
+#logging.info("Starting val upload")
+#trainGen = myGenerator(K_val,25)
+#i = 0
+#for X, y in trainGen.GenerateSamples():
+ #   filename = os.path.join(TEMP_DIR,"batch_{}.hdf5".format(i))
+  #  key = "val/{}".format("batch_{}.hdf5".format(i))
+   # with h5py.File(filename,"w") as f:
+    #    dset = f.create_dataset('image',data=X)
+     #   dset2 = f.create_dataset('labels',data=y)
+#    bucket.upload_file(Filename=filename,Key=key)
+ #   os.remove(filename)
+  #  i += 1
+   # logging.info("Completed batch {}".format(i))
+   # print("Completed batch {}".format(i))
     
 #Clean and upload
 logging.info("Starting test upload")
