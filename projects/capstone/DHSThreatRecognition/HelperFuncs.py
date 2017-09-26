@@ -18,9 +18,16 @@ with open('stats.pickle',"rb") as f:
 	
 NOISE_THRESHOLD = 7000
 
+def ApplyRGBTransform(x,min_v,max_v):
+    return int((x-min_v)/(max_v-min_v)*255)
 
+def ToRGBUnits(x):
+    min_v = np.amin(x)
+    max_v = np.amax(x)
+    return np.vectorize(ApplyRGBTransform)(x,min_v=min_v,max_v=max_v)
+                        
 def NormalizeImage(x,average,std):
-    return (x-average)/std
+    return (x-average)/(std+1e-7)
 
 def ExtractNormParameters(x):
     mask = x > NOISE_THRESHOLD

@@ -243,7 +243,7 @@ def InceptionResNetV1(include_top=True,
             img_input = input_tensor
 
     # Stem block: 35 x 35 x 192
-    x = conv2d_bn(img_input, 16*alpha, 3, strides=(2,3), padding='valid')
+    x = conv2d_bn(img_input, 16*alpha, 3, strides=(2,2), padding='valid')
     x = conv2d_bn(x, 16*alpha, 3, padding='valid')
     x = conv2d_bn(x, 32*alpha, 3)
     x = MaxPooling2D(3, strides=2)(x)
@@ -252,7 +252,7 @@ def InceptionResNetV1(include_top=True,
     x = conv2d_bn(x,128*alpha,3, strides=2)
     
     #5x (Inception-ResNet-A block)
-    for block_idx in range(1,6):
+    for block_idx in range(1,3):
         x = inception_resnet_block(x,
                                    scale=0.1,
                                    block_type = 'block35',
@@ -268,7 +268,7 @@ def InceptionResNetV1(include_top=True,
     x = Concatenate(axis=channel_axis, name='mixed_6a')(branches)
     
     #10X Inception Res-Net B
-    for block_idx in range(1,11):
+    for block_idx in range(1,3):
         x = inception_resnet_block(x,
                                    scale=0.1,
                                    block_type = 'block17',
@@ -288,7 +288,7 @@ def InceptionResNetV1(include_top=True,
     x = Concatenate(axis=channel_axis, name='mixed_7a')(branches)
 
     # 5x block8 (Inception-ResNet-C block): 8 x 8 x 2080
-    for block_idx in range(1, 5):
+    for block_idx in range(1, 3):
         x = inception_resnet_block(x,
                                    scale=0.15,
                                    block_type='block8',
@@ -297,7 +297,7 @@ def InceptionResNetV1(include_top=True,
                                scale=1.,
                                activation=None,
                                block_type='block8',
-                               block_idx=5)
+                               block_idx=3)
 
   
     if include_top:
