@@ -175,12 +175,13 @@ bucket = client.Bucket(UPLOAD_BUCKET)
    # print("Completed batch {}".format(i))
     
 #Clean and upload
+print("Uploading {} files".format(len(K_test)))
 logging.info("Starting test upload")
 trainGen = myGenerator(K_test,25)
-i = 0
+i = 2122
 for X, y in trainGen.GenerateSamples():
     filename = os.path.join(TEMP_DIR,"batch_{}.hdf5".format(i))
-    key = "test/{}".format("batch_{}.hdf5".format(i))
+    key = "train/{}".format("batch_{}.hdf5".format(i))
     with h5py.File(filename,"w") as f:
         dset = f.create_dataset('image',data=X)
         dset2 = f.create_dataset('labels',data=y)

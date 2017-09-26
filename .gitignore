@@ -73,3 +73,5 @@ projects/capstone/DHSThreatRecognition/logs/
 *.pickle
 #H5 Files
 *.h5
+#Ignore checkpoints folder
+check_points/
