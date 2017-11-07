@@ -8,6 +8,17 @@ import os
 import cv2
 import time
 
+# Define important environment variables
+LABELS_FILE = 'stage1_labels.csv'
+AWS_CONFIG_FILE = 'S3.conf'
+RAW_DATA_BUCKET = 'miscdatastorage'
+RAW_DATA_DIRECTORY = 'DHSData/'
+TEMP_DIR = 'temp/'
+
+# Create relevant directories
+if not os.path.isdir(TEMP_DIR):
+    os.mkdir(TEMP_DIR)
+
 np.random.seed(0)
 #Image preprocessing funcitons and global variables
 #Load stats
@@ -35,9 +46,9 @@ def ExtractNormParameters(x):
     std = x[mask].std()
     return average,std
 
-def ReduceNoise(x):
-    if x < NOISE_THRESHOLD:
-        x = NOISE_THRESHOLD
+def ReduceNoise(x, thresh=NOISE_THRESHOLD):
+    if x < thresh:
+        x = thresh
     return x
 
 def ReduceNoiseandNormalize(x,average,std):
@@ -164,7 +175,7 @@ def GetAWSCredentials():
     
     '''
     config = configparser.ConfigParser()
-    config.read('S3.conf')
+    config.read(AWS_CONFIG_FILE)
     AWS_ACCESS_KEY_ID = config['DEFAULT']['AccessKeyId']
     AWS_SECRET_ACCESS_KEY = config['DEFAULT']['AccessKeySecret']
     return AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
@@ -190,7 +201,7 @@ def GetLabelsDict(labels_dir):
     labels_dict = {i:j for i,j in labels_merged}
     return labels_dict
 
-
+        
 class BatchRequester:
     '''
     Class used to request batches from AWS server.
