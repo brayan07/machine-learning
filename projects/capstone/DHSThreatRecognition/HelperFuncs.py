@@ -13,48 +13,21 @@ LABELS_FILE = 'stage1_labels.csv'
 AWS_CONFIG_FILE = 'S3.conf'
 RAW_DATA_BUCKET = 'miscdatastorage'
 RAW_DATA_DIRECTORY = 'DHSData/'
+CLEAN_DATA_BUCKET = 'cleandhsdata'
+CLEAN_DATA_DIR = 'fullfeatureextraction'
 TEMP_DIR = 'temp/'
+EXTENSION = '.a3daps'
+NOISE_THRESHOLD = 7000
 
 # Create relevant directories
 if not os.path.isdir(TEMP_DIR):
     os.mkdir(TEMP_DIR)
 
-np.random.seed(0)
-#Image preprocessing funcitons and global variables
-#Load stats
-with open('stats.pickle',"rb") as f:
-    stats = pickle.load(f)
-    AVERAGE = stats['average']
-    STD = stats['std']
-	
-NOISE_THRESHOLD = 7000
-
-def ApplyRGBTransform(x,min_v,max_v):
-    return int((x-min_v)/(max_v-min_v)*255)
-
-def ToRGBUnits(x):
-    min_v = np.amin(x)
-    max_v = np.amax(x)
-    return np.vectorize(ApplyRGBTransform)(x,min_v=min_v,max_v=max_v)
-                        
-def NormalizeImage(x,average,std):
-    return (x-average)/(std+1e-7)
-
-def ExtractNormParameters(x):
-    mask = x > NOISE_THRESHOLD
-    average = np.average(x,weights = mask)
-    std = x[mask].std()
-    return average,std
 
 def ReduceNoise(x, thresh=NOISE_THRESHOLD):
     if x < thresh:
         x = thresh
     return x
-
-def ReduceNoiseandNormalize(x,average,std):
-    if x < NOISE_THRESHOLD:
-        x = NOISE_THRESHOLD
-    return (x-average)/std
 
 def FindCropDimensions(x,thresh=NOISE_THRESHOLD):
     ''' Expects a 2d image ndarray. Returns the minimum row and column along each dimension
@@ -104,7 +77,8 @@ def FindCropDimensions(x,thresh=NOISE_THRESHOLD):
     
     return min_i,max_i,max_j
 	
-#Cropping and resizing functions
+    
+# Cropping and resizing functions
 def CropImage(x,min_i,max_i,max_j,new_i,new_j):
     '''Returns regions of interest in the image'''
     resize_i = False
@@ -154,6 +128,7 @@ def CropImage(x,min_i,max_i,max_j,new_i,new_j):
         return cv2.resize(x[min_i:max_i+1,:max_j+1],dsize=(new_j,new_i))
     else:
         return x[min_i:max_i+1,:max_j+1]
+    
 def CropCleanResize(x,new_i,new_j):
     '''Crops and returns 2d image with specified uniform dimensions'''
     min_i,max_i,max_j = FindCropDimensions(x)
@@ -162,7 +137,7 @@ def CropCleanResize(x,new_i,new_j):
     x_new = ReduceNoise_v(x_new)
     return x_new
 	
-#Helper functions
+# AWS Helper functions
 def GetShuffledKeys(bucket):
     contents = [k.key for k in bucket.objects.all()]
     contents = contents[1:]
@@ -197,14 +172,13 @@ def GetLabelsDict(labels_dir):
     '''
     labels = pd.read_csv(labels_dir)
     labels = [[i,j] for i,j in zip(labels['Id'],labels['Probability'])] 
-    labels_merged = iof.merge_17(labels) #Returns list of ids and corresponding list of zones
+    labels_merged = iof.merge_17(labels) # Returns list of ids and corresponding list of zones
     labels_dict = {i:j for i,j in labels_merged}
     return labels_dict
 
-        
 class BatchRequester:
     '''
-    Class used to request batches from AWS server.
+    Class used to request batches from AWS S3 Bucket.
     
     '''
     keys = None
@@ -243,7 +217,7 @@ class BatchRequester:
         self.keys = self.CleanKeyAry(key_ary)
         
     def CleanKeyAry(self,key_ary):
-        '''Makes certain that keys given are all in the labels supplied'''
+        '''Makes certain that keys given all have labels'''
         key_ary_new=[]
         for key in key_ary:
             img_id = key.strip().replace(self.dataDir,'').replace(self.extension,'')
