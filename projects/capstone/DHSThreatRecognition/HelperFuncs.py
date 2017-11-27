@@ -8,6 +8,16 @@ import os
 import cv2
 import time
 
+
+# Check to make sure setup_file has been run
+DEMO_CONF_FILE = "isDemo.conf"
+assert os.path.exists(DEMO_CONF_FILE)
+
+# Check to see whther we should run in demo mode
+config = configparser.RawConfigParser()
+config.read(DEMO_CONF_FILE)
+IS_DEMO = config.getboolean('DEFAULT','isDemo')
+
 # Define important environment variables
 LABELS_FILE = 'stage1_labels.csv'
 AWS_CONFIG_FILE = 'S3.conf'
@@ -18,9 +28,21 @@ CLEAN_DATA_DIR = 'fullfeatureextraction'
 TEMP_DIR = 'temp/'
 EXTENSION = '.a3daps'
 NOISE_THRESHOLD = 7000
+FINAL_WIDTH = 400
+FINAL_HEIGHT = 600
+CHANNELS = 1
+ZONES = 17
+ANGLES = 16
 
-# Create relevant directories
+# Set variables depending on value of isDemo
+if IS_DEMO:
+    print("Setting demo environment variables...")
+    CLEAN_DATA_BUCKET = "democleandhsdata"
+    AWS_CONFIG_FILE = "DemoS3.conf"
+    
+# Create temporary directory if it doesn't exist
 if not os.path.isdir(TEMP_DIR):
+    print("Creating temp directory")
     os.mkdir(TEMP_DIR)
 
 
@@ -76,7 +98,6 @@ def FindCropDimensions(x,thresh=NOISE_THRESHOLD):
         max_i = temp
     
     return min_i,max_i,max_j
-	
     
 # Cropping and resizing functions
 def CropImage(x,min_i,max_i,max_j,new_i,new_j):
@@ -217,7 +238,7 @@ class BatchRequester:
         self.keys = self.CleanKeyAry(key_ary)
         
     def CleanKeyAry(self,key_ary):
-        '''Makes certain that keys given all have labels'''
+        '''Makes certain that given keys all have labels'''
         key_ary_new=[]
         for key in key_ary:
             img_id = key.strip().replace(self.dataDir,'').replace(self.extension,'')
@@ -315,6 +336,19 @@ class BatchRequester:
             return batch_data, batch_labels        
         else:
             return batch_data[:i,:,:,:],batch_labels[:i]
-            
+
+def CleanKeyAry(key_ary,labels_dict,dataDir,extension):
+        '''
+        Makes certain that given keys all have labels. 
+        This function is adapted from an internal method of the batch requester.
+        '''
+        key_ary_new=[]
+        for key in key_ary:
+            img_id = key.strip().replace(dataDir,'').replace(extension,'')
+            if img_id in labels_dict.keys():
+                key_ary_new.append(key)
+            else:
+                continue 
+        return key_ary_new
  
     
