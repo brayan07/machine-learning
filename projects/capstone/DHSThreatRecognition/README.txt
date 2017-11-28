@@ -12,12 +12,13 @@ Opencv3	3.2.0
 Pillow	4.2.1
 Seaborn	0.8.1
 tensorflow	1.3.0
+statsmodels	0.8.0
 
 Notice the code does not work with versions of matplotlib > 2.0.2
 
 Before beginning, run the following command:
 
-pip install pandas matplotlib==2.0.2 seaborn boto3 h5py imbalanced-learn tensorflow keras opencv-python pillow
+pip install pandas matplotlib==2.0.2 seaborn boto3 h5py imbalanced-learn tensorflow keras opencv-python pillow statsmodels
 
 Notebooks
 --------------------------------------------------------------------------
@@ -47,4 +48,8 @@ Now, you may verify that the notebooks are running as intended.
 			Reenter the authentication credentials each time.   
 		2.	View the notebook, making sure to restart the kernel 
 			if you had been viewing the notebook before. 	
+
+
+
+
 
