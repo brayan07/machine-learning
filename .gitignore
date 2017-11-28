@@ -63,3 +63,15 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+#Conf Files
+*.conf
+#Temp Boto files
+projects/capstone/DHSThreatRecognition/temp/
+#Tensorboard directory
+projects/capstone/DHSThreatRecognition/logs/
+#Pickle files
+*.pickle
+#H5 Files
+*.h5
+#Ignore checkpoints folder
+check_points/

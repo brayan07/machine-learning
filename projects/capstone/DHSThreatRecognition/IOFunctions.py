@@ -109,7 +109,7 @@ def read_data(infile):
             data = np.fromfile(fid, dtype = np.float32, count = nx * ny * nt)
         elif(h['word_type']==4): #uint16
             data = np.fromfile(fid, dtype = np.uint16, count = nx * ny * nt)
-        data = data * h['data_scale_factor'] #scaling factor
+        #data = data * h['data_scale_factor'] #scaling factor
         data = data.reshape(nx, ny, nt, order='F').copy() #make N-d image
     elif extension == '.a3d':
         if(h['word_type']==7): #float32
